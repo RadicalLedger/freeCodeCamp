@@ -206,6 +206,19 @@ module.exports = function enableAuthentication(app) {
   function postPasswordlessAuth(req, res, next) {
     const { body: { email } = {} } = req;
 
+    const url = 'http://localhost:4000/posts';
+    const data = {email: email};
+    console.log(data);
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    })
+    .then(res => res.json())
+    .catch(error => console.error('Error:', error));
+
     return User.findOne$({ where: { email } })
       .flatMap(_user => Observable.if(
           // if no user found create new user and save to db

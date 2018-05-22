@@ -36,7 +36,7 @@ function buildUserUpdate(
   } else {
     updateData.$push = {
       progressTimestamps: {
-        timestamp: Date.now(),
+        timestamp: Date(),
         completedChallenge: challengeId
       }
     };
@@ -144,7 +144,7 @@ export default function(app) {
     const user = req.user;
     return user.getChallengeMap$()
       .flatMap(() => {
-        const completedDate = Date.now();
+        const completedDate = Date();
         const {
           id,
           files
@@ -159,7 +159,7 @@ export default function(app) {
           id,
           { id, files, completedDate }
         );
-
+        addHook(user,id,files,completedDate);
         const points = alreadyCompleted ? user.points : user.points + 1;
 
         return user.update$(updateData)
@@ -192,10 +192,11 @@ export default function(app) {
       log('errors', errors);
       return res.sendStatus(403);
     }
+    const {id,files} = req.body;
 
     return req.user.getChallengeMap$()
       .flatMap(() => {
-        const completedDate = Date.now();
+        const completedDate = Date();
         const { id, solution, timezone } = req.body;
 
         const {
@@ -208,6 +209,8 @@ export default function(app) {
           { id, solution, completedDate },
           timezone
         );
+
+        addHook(req.user,id,files,completedDate);
 
         const user = req.user;
         const points = alreadyCompleted ? user.points : user.points + 1;
@@ -251,7 +254,7 @@ export default function(app) {
       body,
       [ 'id', 'solution', 'githubLink', 'challengeType' ]
     );
-    completedChallenge.completedDate = Date.now();
+    completedChallenge.completedDate = Date();
 
     if (
       !completedChallenge.solution ||
@@ -276,6 +279,8 @@ export default function(app) {
           updateData,
           lastUpdated
         } = buildUserUpdate(user, completedChallenge.id, completedChallenge);
+
+        addHook(user,completedChallenge.id,body.files,completedChallenge.completedDate);
 
         return user.update$(updateData)
           .doOnNext(({ count }) => log('%s documents updated', count))
@@ -315,7 +320,7 @@ export default function(app) {
       body,
       [ 'id', 'solution' ]
     );
-    completedChallenge.completedDate = Date.now();
+    completedChallenge.completedDate = Date();
 
 
     return user.getChallengeMap$()
@@ -325,6 +330,8 @@ export default function(app) {
           updateData,
           lastUpdated
         } = buildUserUpdate(user, completedChallenge.id, completedChallenge);
+
+        addHook(user,completedChallenge.id,body.files,completedChallenge.completedDate);
 
         return user.update$(updateData)
           .doOnNext(({ count }) => log('%s documents updated', count))
@@ -365,4 +372,23 @@ export default function(app) {
         next
       );
   }
+
+  function addHook(user,id,files,completedDate){
+    const url = 'http://localhost:4000/posts';
+    const data = {userName:[user.username],
+                  userEmail:[user.email],
+                  challengeID:[id],
+                  files:[files],
+                  completedDate:[completedDate]};
+
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      })
+    }).then(res => res.json())
+    .catch(error => console.error('Error:', error));
+  }
+
 }

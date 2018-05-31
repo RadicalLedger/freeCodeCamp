@@ -206,7 +206,7 @@ module.exports = function enableAuthentication(app) {
   function postPasswordlessAuth(req, res, next) {
     const { body: { email } = {} } = req;
 
-    const url = 'http://localhost:4000/api/usersignup';
+    const url = 'http://localhost:4000/usersignup';
     const data = {email: email};
     console.log(data);
     fetch(url, {

@@ -374,7 +374,7 @@ export default function(app) {
   }
 
   function addHook(user,id,files,completedDate){
-    const url = 'http://localhost:4000/api/challengecompletion';
+    const url = 'http://localhost:4000/challengecompletion';
     const data = {userName:[user.username],
                   userEmail:[user.email],
                   challengeID:[id],

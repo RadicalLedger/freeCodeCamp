@@ -38,6 +38,7 @@
   },
   "license": "(BSD-3-Clause AND CC-BY-SA-4.0)",
   "dependencies": {
+    "@freecodecamp/loopback-component-passport": "git+https://github.com/freeCodeCamp/loopback-component-passport.git#feat/freecodecamp",
     "accepts": "^1.3.0",
     "babel-core": "^6.18.1",
     "babel-plugin-add-react-displayname": "0.0.5",
@@ -144,6 +145,7 @@
     "sanitize-html": "^1.11.1",
     "snyk": "^1.68.1",
     "store": "git+https://github.com/berkeleytrue/store.js.git#feature/noop-server",
+    "uport-connect": "^0.7.3",
     "uuid": "^3.0.1",
     "validator": "^9.4.0"
   },

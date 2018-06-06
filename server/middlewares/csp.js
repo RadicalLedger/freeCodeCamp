@@ -4,7 +4,8 @@ let trusted = [
   "'self'",
   'https://search.freecodecamp.org',
   'https://*.opbeat.com',
-  'https://*.algolianet.com'
+  'https://*.algolianet.com',
+  'https://chasqui.uport.me'
 ];
 
 const host = process.env.HOST || 'localhost';
@@ -46,7 +47,8 @@ export default function csp() {
         'https://*.twimg.com',
         '*.youtube.com',
         '*.ytimg.com',
-        'https://*.optimizely.com'
+        'https://*.optimizely.com',
+        'https://unpkg.com/uport-connect/dist/uport-connect.min.js'
       ].concat(trusted),
       styleSrc: [
         "'unsafe-inline'",

@@ -22,6 +22,10 @@ block content
                     | Get a sign in link
         .row
           .col-sm-6.col-sm-offset-3
+              p.text-center
+                button.btn.btn-primary.btn-lg.btn-block(onclick='uportLogin()') Sign in with uPort
+        .row
+          .col-sm-6.col-sm-offset-3
               br
               p.text-center
                 br
@@ -29,6 +33,11 @@ block content
                 a(href="/deprecated-signin") Try old sign in methods
 
         script.
+          const Connect = window.uportconnect.Connect;
+          const appName = 'freeCodeCamp';
+          const connect = new Connect(appName, {network: 'rinkeby'});
+          const web3 = connect.getWeb3();
+
           $(document).ready(function() {
             function disableMagicButton (isDisabled) {
                 if (isDisabled) {
@@ -41,6 +50,11 @@ block content
                     .html('<span style="color:#E0E0E0;">If you didn\'t get the email, check your spam folder, or reload the page to try again.</span>');
                 }
             }
+
+            $('#uportBtn').click(function(){
+              console.log('sa');
+              
+            });
 
             $('form').submit(function(event){
               event.preventDefault();
@@ -98,3 +112,13 @@ block content
               });
             });
           });
+
+          function uportLogin(){
+            web3.eth.getCoinbase((error, address) => {
+                if (error) { throw error }
+                const ethAddress = address
+                const uportId = window.uportconnect.MNID.encode({network: '0x4', address: address})
+                console.log(ethAddress);
+                console.log(uportId);
+            })
+          }

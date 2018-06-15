@@ -5,7 +5,9 @@ let trusted = [
   'https://search.freecodecamp.org',
   'https://*.opbeat.com',
   'https://*.algolianet.com',
-  'https://chasqui.uport.me'
+  'https://chasqui.uport.me',
+  'https://rinkeby.infura.io/',
+  'https://ipfs.infura.io/'
 ];
 
 const host = process.env.HOST || 'localhost';
@@ -48,7 +50,8 @@ export default function csp() {
         '*.youtube.com',
         '*.ytimg.com',
         'https://*.optimizely.com',
-        'https://unpkg.com/uport-connect/dist/uport-connect.min.js'
+        'https://unpkg.com/uport-connect/dist/uport-connect.min.js',
+        'https://code.jquery.com/jquery-3.3.1.js'
       ].concat(trusted),
       styleSrc: [
         "'unsafe-inline'",

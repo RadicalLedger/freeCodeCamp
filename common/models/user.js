@@ -502,7 +502,8 @@ module.exports = function(User) {
 
   User.decodeEmail = email => Buffer(email, 'base64').toString();
 
-  function requestAuthEmail(isSignUp, newEmail) {
+  function requestAuthEmail(isSignUp, newEmail, isUport) {
+    var url = '';
     return Observable.defer(() => {
       const messageOrNull = getWaitMessage(this.emailAuthLinkTTL);
       if (messageOrNull) {
@@ -546,21 +547,49 @@ module.exports = function(User) {
             emailChange: !!newEmail
           })
         };
+        isUport ?
+          url = host+'/passwordless-auth/?email='+loginEmail+'&token='+loginToken
+          :
+          url = '/passwordless-auth/?email='+loginEmail+'&token='+loginToken
+
+
         return Observable.forkJoin(
           User.email.send$(mailOptions),
           this.update$({ emailAuthLinkTTL })
         );
       })
-      .map(() => isSignUp ?
-        dedent`
-          We created a new account for you!
-          Check your email and click the sign in link we sent you.
-        ` :
-        dedent`
-          We found your existing account.
-          Check your email and click the sign in link we sent you.
-        `
-      );
+      .map(() => {
+        let msgSignup = {link: url,
+                          msg: dedent`
+                            We created a new account for you!
+                            Check your email and click the sign in link we sent you.
+                          `
+                          };
+        let msgSignin = {link: url,
+                          msg: dedent`
+                            We found your existing account.
+                            Check your email and click the sign in link we sent you.
+                          `
+                          };
+        if (isUport) {
+          msgSignup = {link: url,
+                      msg: dedent`
+                        uPort - We created a new account for you!
+                        Check your email and click the sign in link we sent you.
+                      `
+                      };
+          msgSignin = {link: url,
+                      msg: dedent`
+                        uPort - We found your existing account.
+                        Check your email and click the sign in link we sent you.
+                      `
+                      };
+        }
+        if (isSignUp)
+          return msgSignup;
+        else
+          return msgSignin;
+      });
   }
 
   User.prototype.requestAuthEmail = requestAuthEmail;

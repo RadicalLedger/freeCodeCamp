@@ -33,7 +33,7 @@ module.exports = function enableAuthentication(app) {
   router.get('/logout', (req, res) => res.redirect(301, '/signout'));
   router.get('/signup', (req, res) => res.redirect(301, '/signin'));
   router.get('/email-signin', (req, res) => res.redirect(301, '/signin'));
-
+  
   function getEmailSignin(req, res) {
     if (isSignUpDisabled) {
       return res.render('account/beta', {
@@ -44,7 +44,7 @@ module.exports = function enableAuthentication(app) {
       title: 'Sign in to freeCodeCamp using your Email Address'
     });
   }
-
+  
   router.get('/signin', ifUserRedirect, getEmailSignin);
 
   router.get('/signout', (req, res) => {
@@ -203,21 +203,26 @@ module.exports = function enableAuthentication(app) {
       .isEmail()
       .withMessage('Email is not a valid email address.')
   ];
+
   function postPasswordlessAuth(req, res, next) {
     const { body: { email } = {} } = req;
-
-    const url = 'http://localhost:4000/usersignup';
-    const data = {email: email};
-    console.log(data);
-    fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: new Headers({
-        'Content-Type': 'application/json'
-      })
-    })
-    .then(res => res.json())
-    .catch(error => console.error('Error:', error));
+    var isUport = false;
+    
+    if (req.body.isUport)
+      isUport = true;
+    
+    // const url = 'http://localhost:4000/usersignup';
+    // const data = {email: email};
+    // console.log(data);
+    // fetch(url, {
+    //   method: 'POST',
+    //   body: JSON.stringify(data),
+    //   headers: new Headers({
+    //     'Content-Type': 'application/json'
+    //   })
+    // })
+    // .then(res => res.json())
+    // .catch(error => console.error('Error:', error));
 
     return User.findOne$({ where: { email } })
       .flatMap(_user => Observable.if(
@@ -226,9 +231,9 @@ module.exports = function enableAuthentication(app) {
           Observable.of(_user),
           User.create$({ email })
         )
-        .flatMap(user => user.requestAuthEmail(!_user))
+        .flatMap(user => user.requestAuthEmail(!_user, null, isUport))
       )
-      .do(msg => {
+      .do(data => {
         let redirectTo = '/';
 
         if (
@@ -238,8 +243,12 @@ module.exports = function enableAuthentication(app) {
           redirectTo = req.session.returnTo;
         }
 
-        req.flash('info', msg);
-        return res.redirect(redirectTo);
+        req.flash('info', data.msg);
+
+        if (isUport)
+          return res.send(data.link); 
+        else  
+          return res.redirect(redirectTo);       
       })
       .subscribe(_.noop, next);
   }

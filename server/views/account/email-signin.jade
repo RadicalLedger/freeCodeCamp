@@ -23,7 +23,7 @@ block content
         .row
           .col-sm-6.col-sm-offset-3
               p.text-center
-                button.btn.btn-primary.btn-lg.btn-block(onclick='uportLogin()') Sign in with uPort
+                button.btn.btn-primary.btn-lg.btn-block(onclick="uportLogin()") Sign in with uPort
         .row
           .col-sm-6.col-sm-offset-3
               br
@@ -33,10 +33,14 @@ block content
                 a(href="/deprecated-signin") Try old sign in methods
 
         script.
+
+          const SimpleSigner = window.uportconnect.SimpleSigner;
           const Connect = window.uportconnect.Connect;
-          const appName = 'freeCodeCamp';
-          const connect = new Connect(appName, {network: 'rinkeby'});
-          const web3 = connect.getWeb3();
+          const uport = new Connect('freeCodeCamp', 
+                                    {network: 'rinkeby',
+                                     clientId: '2opD8HCEmWbGmYkT4TaTY2aSAK9LvDeAXeC',
+                                     signer: SimpleSigner('fc490780a7afa2ccb6d0abbbf2381e95dd7f327f9118443a5f48a0bada1b820a')
+                                     });
 
           $(document).ready(function() {
             function disableMagicButton (isDisabled) {
@@ -50,24 +54,23 @@ block content
                     .html('<span style="color:#E0E0E0;">If you didn\'t get the email, check your spam folder, or reload the page to try again.</span>');
                 }
             }
+          });
 
-            $('#uportBtn').click(function(){
-              console.log('sa');
-              
-            });
-
-            $('form').submit(function(event){
-              event.preventDefault();
-              $('#flash-board').hide();
-              disableMagicButton(true);
-              var $form = $(event.target);
+          function uportLogin (){
+            uport.requestCredentials({requested:['email'],
+                                      notifications: true})
+            .then((user) => {
+              const data = {email: user.email,
+                            isUport: true};
+              console.log(data);
               $.ajax({
                 type        : 'POST',
-                url         : $form.attr('action'),
-                data        : $form.serialize(),
-                dataType    : 'json',
+                url         : '/passwordless-auth',
+                data        : data,
                 encode      : true,
-                xhrFields   : { withCredentials:  true }
+                success     : (link) => {
+                                window.location.assign(link);
+                              }
               })
               .fail(error => {
                 if (error.responseText){
@@ -110,15 +113,8 @@ block content
                   disableMagicButton(false);
                 }
               });
-            });
-          });
-
-          function uportLogin(){
-            web3.eth.getCoinbase((error, address) => {
-                if (error) { throw error }
-                const ethAddress = address
-                const uportId = window.uportconnect.MNID.encode({network: '0x4', address: address})
-                console.log(ethAddress);
-                console.log(uportId);
             })
-          }
+            .catch(e => {
+              console.log(e);
+            })
+          };
